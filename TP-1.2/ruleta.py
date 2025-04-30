@@ -26,7 +26,7 @@ estrategia = arguments[6]
 tipo_capital = arguments[8]
 
 apuesta_inicial = 5
-capital_inicial = 0 if tipo_capital == 'i' else 10000
+capital_inicial = 10000
 resultados_rojo = [1, 3, 5, 7, 9, 12, 14, 16,
                    18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
 frec_relativa_esperada = 18/37  # apostando al rojo, 18 numeros rojos de 37
@@ -58,7 +58,7 @@ def estrategia_martingala(ultima_apuesta, is_win, capital):
         capital -= ultima_apuesta
         proxima_apuesta = ultima_apuesta * 2
 
-    return proxima_apuesta, capital
+    return proxima_apuesta, capital   
 
 
 def estrategia_dalembert(ultima_apuesta, is_win, capital):
@@ -98,14 +98,13 @@ def estrategia_martingala_invertida(ultima_apuesta, is_win, capital):
     unidad = apuesta_inicial
     if is_win:
         capital += ultima_apuesta
-        proxima_apuesta = ultima_apuesta + unidad  # si gana se aumenta la apuesta
+        proxima_apuesta = ultima_apuesta + unidad #si gana se aumenta la apuesta
     else:
         capital -= ultima_apuesta
-        proxima_apuesta = apuesta_inicial  # si pierde se vuelve a la apuesta inicial
+        proxima_apuesta = apuesta_inicial #si pierde se vuelve a la apuesta inicial
 
-    # no se apuesta más de lo disponible
-    proxima_apuesta = min(proxima_apuesta, capital)
-
+    proxima_apuesta = min(proxima_apuesta, capital) #no se apuesta más de lo disponible
+    
     return proxima_apuesta, capital
 
 
@@ -139,8 +138,7 @@ def ejecutar_corrida():
             proxima_apuesta, capital = estrategia_dalembert(
                 apuestas[-1], is_win, capital)
         elif estrategia == 'o':
-            proxima_apuesta, capital = estrategia_martingala_invertida(
-                apuestas[-1], is_win, capital)
+            proxima_apuesta, capital = estrategia_martingala_invertida(apuestas[-1], is_win, capital)
 
         if proxima_apuesta > capital and tipo_capital == 'f':  # banca rota
             break
