@@ -26,9 +26,10 @@ estrategia = arguments[6]
 tipo_capital = arguments[8]
 
 apuesta_inicial = 5
-capital_inicial = 10000
-resultados_rojo = [1, 3, 5, 7, 9, 12, 14, 16,18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
-frec_relativa_esperada = 18/37 # apostando al rojo, 18 numeros rojos de 37
+capital_inicial = 0 if tipo_capital == 'i' else 10000
+resultados_rojo = [1, 3, 5, 7, 9, 12, 14, 16,
+                   18, 19, 21, 23, 25, 27, 30, 32, 34, 36]
+frec_relativa_esperada = 18/37  # apostando al rojo, 18 numeros rojos de 37
 
 serie_fibonacci = [1, 1]
 indice_fibonacci = 0
@@ -48,6 +49,18 @@ estrategias = {
     },
 }
 
+
+def estrategia_martingala(ultima_apuesta, is_win, capital):
+    if is_win:
+        capital += ultima_apuesta
+        proxima_apuesta = apuesta_inicial
+    else:
+        capital -= ultima_apuesta
+        proxima_apuesta = ultima_apuesta * 2
+
+    return proxima_apuesta, capital
+
+
 def estrategia_dalembert(ultima_apuesta, is_win, capital):
     unidad = apuesta_inicial
     if is_win:
@@ -59,6 +72,7 @@ def estrategia_dalembert(ultima_apuesta, is_win, capital):
         proxima_apuesta = ultima_apuesta + unidad
 
     return proxima_apuesta, capital
+
 
 def estrategia_fibonacci(ultima_apuesta, is_win, capital):
     global indice_fibonacci
@@ -74,24 +88,24 @@ def estrategia_fibonacci(ultima_apuesta, is_win, capital):
         if indice_fibonacci >= len(serie_fibonacci):
             nuevo_valor = serie_fibonacci[-1] + serie_fibonacci[-2]
             serie_fibonacci.append(nuevo_valor)
-    
+
     proxima_apuesta = serie_fibonacci[indice_fibonacci]
-    
-        
 
     return proxima_apuesta, capital
+
 
 def estrategia_martingala_invertida(ultima_apuesta, is_win, capital):
     unidad = apuesta_inicial
     if is_win:
         capital += ultima_apuesta
-        proxima_apuesta = ultima_apuesta + unidad #si gana se aumenta la apuesta
+        proxima_apuesta = ultima_apuesta + unidad  # si gana se aumenta la apuesta
     else:
         capital -= ultima_apuesta
-        proxima_apuesta = apuesta_inicial #si pierde se vuelve a la apuesta inicial
+        proxima_apuesta = apuesta_inicial  # si pierde se vuelve a la apuesta inicial
 
-    proxima_apuesta = min(proxima_apuesta, capital) #no se apuesta más de lo disponible
-    
+    # no se apuesta más de lo disponible
+    proxima_apuesta = min(proxima_apuesta, capital)
+
     return proxima_apuesta, capital
 
 
@@ -116,11 +130,17 @@ def ejecutar_corrida():
         frecuencia_relativa.append(wins.count(True) / (index + 1))
 
         if estrategia == 'f':
-            proxima_apuesta, capital = estrategia_fibonacci(apuestas[-1], is_win, capital)
+            proxima_apuesta, capital = estrategia_fibonacci(
+                apuestas[-1], is_win, capital)
+        elif estrategia == 'm':
+            proxima_apuesta, capital = estrategia_martingala(
+                apuestas[-1], is_win, capital)
         elif estrategia == 'd':
-            proxima_apuesta, capital = estrategia_dalembert(apuestas[-1], is_win, capital)
+            proxima_apuesta, capital = estrategia_dalembert(
+                apuestas[-1], is_win, capital)
         elif estrategia == 'o':
-            proxima_apuesta, capital = estrategia_martingala_invertida(apuestas[-1], is_win, capital)
+            proxima_apuesta, capital = estrategia_martingala_invertida(
+                apuestas[-1], is_win, capital)
 
         if proxima_apuesta > capital and tipo_capital == 'f':  # banca rota
             break
@@ -137,21 +157,24 @@ def ejecutar_corrida():
         'wins': wins,
         'frec_rel': frecuencia_relativa
     })
-    
+
     df.index = df.index + 1
-    
+
     return df
+
 
 def grafico_flujo_caja(corridas):
     print('Graficando flujo de caja...')
     plt.figure()
-        
+
     for corrida in corridas:
-        sns.lineplot(x=corrida.index, y=corrida['flujo_caja'], alpha=1, linewidth=1, label=None)
+        sns.lineplot(x=corrida.index,
+                     y=corrida['flujo_caja'], alpha=1, linewidth=1, label=None)
 
     esperado_label = 'Capital inicial'
-    plt.axhline(capital_inicial, color='red', linestyle='--', label=f'{esperado_label}') 
-    
+    plt.axhline(capital_inicial, color='red',
+                linestyle='--', label=f'{esperado_label}')
+
     title = f'{estrategias[estrategia]['title']} - {cantidad_corridas} CORRIDAS'
     xlabel = 'n (número de tiradas)'
     ylabel = 'c (capital)'
@@ -163,6 +186,7 @@ def grafico_flujo_caja(corridas):
     plt.tight_layout()
     plt.show()
 
+
 def graficar_histograma(corridas):
     print('Graficando histograma...')
     fig, ax = plt.subplots()
@@ -173,10 +197,12 @@ def graficar_histograma(corridas):
     for corrida in corridas:
         ax.bar(corrida.index, corrida['frec_rel'], alpha=0.5)
 
-    ax.axhline(frec_relativa_esperada, color='r', linestyle='--', label='fre (frecuencia relativa esperada)')
+    ax.axhline(frec_relativa_esperada, color='r', linestyle='--',
+               label='fre (frecuencia relativa esperada)')
     ax.legend()
 
-    ax.set_title(f"HISTOGRAMA {estrategias[estrategia]['title']} - {cantidad_corridas} CORRIDAS")
+    ax.set_title(
+        f"HISTOGRAMA {estrategias[estrategia]['title']} - {cantidad_corridas} CORRIDAS")
     plt.show()
 
 
